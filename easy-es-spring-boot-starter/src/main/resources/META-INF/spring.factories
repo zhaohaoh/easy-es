@@ -1,0 +1,3 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+ com.easyes.starter.auto.EsAutoConfiguration,\
+ com.easyes.starter.config.BulkProcessorConfig
