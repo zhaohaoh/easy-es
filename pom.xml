@@ -48,66 +48,6 @@
         <system>Github Issue</system>
         <url>https://github.com/zhaohaohuang/easy-es</url>
     </issueManagement>
-
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>io.github.zhaohaohuang</groupId>
-                <artifactId>easy-es-pom</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-    <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-            <version>${spring-boot.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure</artifactId>
-            <version>${spring-boot.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <!-- Optional dependencies -->
-        <!--
-            给IDE工具提供 application.yml 更好的提示
-             mvn compile 时会在生成一个名为 spring-configuration-metadata.json 文件
-        -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <version>${spring-boot.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <!--
-       提升启动时间
-       生成一个名为 META-INF/spring-autoconfigure-metadata.properties 文件
-       Spring Boot 在启动期间读取这些元数据，可以过滤出不满足条件的配置，而不必实际检查这些类，提升启动速度
-   -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-autoconfigure-processor</artifactId>
-            <version>${spring-boot.version}</version>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>1.18.12</version>
-            <scope>provided</scope>
-        </dependency>
-    </dependencies>
     <distributionManagement>
         <snapshotRepository>
             <id>oss</id>
@@ -197,4 +137,65 @@
             </plugin>
         </plugins>
     </build>
+
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.github.zhaohaohuang</groupId>
+                <artifactId>easy-es-pom</artifactId>
+                <version>${project.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+            <version>${spring-boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>${spring-boot.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <!-- Optional dependencies -->
+        <!--
+            给IDE工具提供 application.yml 更好的提示
+             mvn compile 时会在生成一个名为 spring-configuration-metadata.json 文件
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <version>${spring-boot.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <!--
+       提升启动时间
+       生成一个名为 META-INF/spring-autoconfigure-metadata.properties 文件
+       Spring Boot 在启动期间读取这些元数据，可以过滤出不满足条件的配置，而不必实际检查这些类，提升启动速度
+   -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure-processor</artifactId>
+            <version>${spring-boot.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.12</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
 </project>
