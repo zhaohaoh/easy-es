@@ -44,20 +44,24 @@
 
 ![image-20220125174537789](C:\Users\Administrator\AppData\Roaming\Typora\typora-user-images\image-20220125174537789.png)
 
-```
+
+
+#### 聚合查询
+
+```java
 EsQueryWrapper<SysUser> esQueryWrapper = new EsQueryWrapper<>(SysUser.class);
-TermsAggregationBuilder username = AggregationBuilders.terms("user").field("email.keyword").order(BucketOrder.count(true));
-EsAggregationWrapper<SysUser> esAggregationWrapper = esQueryWrapper.getEsAggregationWrapper();
-DateHistogramAggregationBuilder date = esAggregationWrapper.dateHistogram(SysUser::getId).fixedInterval(DateHistogramInterval.days(10000));
-date.subAggregation(esAggregationWrapper.sum(SysUser::getSex));
-MaxAggregationBuilder max = esAggregationWrapper.max(SysUser::getSex);
-esAggregationWrapper.add(date).add(max);
-esAggregationWrapper.add(esAggregationWrapper.avgBucket(SysUser::getSex, "id_date_histogram>sex_sum"));
-esQueryWrapper.setEsAggregationWrapper(esAggregationWrapper);
-EsAggregationsReponse<SysUser> aggregations = sysUserEsService.aggregations(esQueryWrapper);
-Max m = aggregations.getMax(SysUser::getSex);
-Terms terms1 = aggregations.getTerms(SysUser::getUsername);
-for (Terms.Bucket bucket : terms1.getBuckets()) {
-    Aggregations aggregations1 = bucket.getAggregations();
-}
+
+EsAggregationWrapper<SysUser>esAggregationWrapper=esQueryWrapper.getEsAggregationWrapper();
+
+DateHistogramAggregationBuilder dateAggBuilder = esAggregationWrapper
+    .dateHistogram(SysUser::getDate)
+	.fixedInterval(DateHistogramInterval.days(100));
+
+dateAggBuilder.subAggregation(esAggregationWrapper.sum(SysUser::getNum));
+
+MaxAggregationBuilder max = esAggregationWrapper.max(SysUser::getAge);
+
+esAggregationWrapper.add(dateAggBuilder)
+    .add(max)
+    .add(esAggregationWrapper.avgBucket(SysUser::getNum, "date_date_histogram>num_sum"));
 ```
