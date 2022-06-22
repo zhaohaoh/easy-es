@@ -49,19 +49,21 @@
 #### 聚合查询
 
 ```java
+// 构建es查询对象
 EsQueryWrapper<SysUser> esQueryWrapper = new EsQueryWrapper<>(SysUser.class);
-
+// 获取es聚合查询对象
 EsAggregationWrapper<SysUser>esAggregationWrapper=esQueryWrapper.getEsAggregationWrapper();
-
+// 时间范围聚合
 DateHistogramAggregationBuilder dateAggBuilder = esAggregationWrapper
     .dateHistogram(SysUser::getDate)
 	.fixedInterval(DateHistogramInterval.days(100));
-
+// 时间范围聚合后进行求和
 dateAggBuilder.subAggregation(esAggregationWrapper.sum(SysUser::getNum));
-
+// 年龄最大值聚合
 MaxAggregationBuilder max = esAggregationWrapper.max(SysUser::getAge);
-
+// 添加前面的聚合
 esAggregationWrapper.add(dateAggBuilder)
     .add(max)
+    // 增加一个对前面的时间范围聚合求平均值
     .add(esAggregationWrapper.avgBucket(SysUser::getNum, "date_date_histogram>num_sum"));
 ```
