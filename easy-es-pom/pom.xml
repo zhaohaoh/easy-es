@@ -13,6 +13,7 @@
         <maven.compiler.target>8</maven.compiler.target>
         <elasticsearch.version>7.8.0</elasticsearch.version>
         <lang3.version>3.9</lang3.version>
+        <spring-boot.version>2.6.3</spring-boot.version>
     </properties>
     <licenses>
         <license>
@@ -21,6 +22,9 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    <name>easy-es-pom</name>
+    <description>easy-es包管理</description>
+    <url>https://github.com/zhaohaoh/easy-es</url>
     <scm>
         <connection>scm:git@github.com:zhaohaoh/easy-es.git</connection>
         <developerConnection>scm:git@github.com:zhaohaoh/easy-es.git</developerConnection>
@@ -110,7 +114,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.10.4</version>
+                <version>2.9.1</version>
                 <configuration>
                     <show>private</show>
                     <nohelp>true</nohelp>
@@ -168,6 +172,14 @@
                 <groupId>io.github.zhaohaoh</groupId>
                 <artifactId>easy-es-annotation</artifactId>
                 <version>${project.version}</version>
+            </dependency>
+<!--      最后加载的依赖包  -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
