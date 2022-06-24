@@ -4,7 +4,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.github.zhaohaohuang</groupId>
+    <groupId>io.github.hzh</groupId>
     <artifactId>easy-es-pom</artifactId>
     <version>1.0.0</version>
     <packaging>pom</packaging>
@@ -165,7 +165,7 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>io.github.zhaohaohuang</groupId>
+                <groupId>io.github.hzh</groupId>
                 <artifactId>easy-es-annotation</artifactId>
                 <version>${project.version}</version>
             </dependency>

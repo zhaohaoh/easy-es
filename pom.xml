@@ -9,7 +9,7 @@
         <module>easy-es-annotation</module>
         <module>easy-es-core</module>
     </modules>
-    <groupId>io.github.zhaohaohuang</groupId>
+    <groupId>io.github.hzh</groupId>
     <artifactId>easy-es</artifactId>
     <version>1.0.0</version>
 
@@ -142,7 +142,7 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
-                <groupId>io.github.zhaohaohuang</groupId>
+                <groupId>io.github.hzh</groupId>
                 <artifactId>easy-es-pom</artifactId>
                 <version>${project.version}</version>
                 <type>pom</type>
