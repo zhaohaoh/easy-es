@@ -22,9 +22,9 @@
         </license>
     </licenses>
     <scm>
-        <connection>scm:git@github.com:zhaohaohuang/easy-es.git</connection>
-        <developerConnection>scm:git@github.com:zhaohaohuang/easy-es.git</developerConnection>
-        <url>https://github.com/zhaohaohuang/easy-es</url>
+        <connection>scm:git@github.com:zhaohaoh/easy-es.git</connection>
+        <developerConnection>scm:git@github.com:zhaohaoh/easy-es.git</developerConnection>
+        <url>https://github.com/zhaohaoh/easy-es</url>
     </scm>
 
     <developers>
@@ -40,7 +40,7 @@
 
     <issueManagement>
         <system>Github Issue</system>
-        <url>https://github.com/zhaohaohuang/easy-es</url>
+        <url>https://github.com/zhaohaoh/easy-es</url>
     </issueManagement>
     <distributionManagement>
         <snapshotRepository>
