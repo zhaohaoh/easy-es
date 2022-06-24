@@ -1,5 +1,10 @@
 package com.easy.es.core;
 
+
+import com.easy.es.constant.EsFieldType;
+import com.easy.es.core.wrapper.EsQueryWrapper;
+import com.easy.es.core.wrapper.EsWrapper;
+import com.easy.es.core.wrapper.aggregation.EsAggregationWrapper;
 import com.easy.es.exception.EsException;
 import com.easy.es.pojo.*;
 import com.easy.es.properties.EsIndexParam;
@@ -7,10 +12,6 @@ import com.easy.es.properties.EsMappingParam;
 import com.easy.es.properties.EsParamHolder;
 import com.easy.es.util.BeanUtils;
 import com.easy.es.util.JsonUtils;
-import com.easy.es.util.ResolveUtils;
-import com.easy.es.constant.EsFieldType;
-import com.easy.es.core.wrapper.EsQueryWrapper;
-import com.easy.es.core.wrapper.EsWrapper;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.elasticsearch.ElasticsearchException;
@@ -59,6 +60,7 @@ import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.SearchHits;
 import org.elasticsearch.search.aggregations.AggregationBuilder;
 import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.BaseAggregationBuilder;
 import org.elasticsearch.search.aggregations.PipelineAggregationBuilder;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.elasticsearch.search.fetch.subphase.highlight.HighlightBuilder;
@@ -79,7 +81,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static com.easy.es.constant.EsConstant.*;
-
+import static com.easy.es.util.ResolveUtils.isCommonDataType;
+import static com.easy.es.util.ResolveUtils.isWrapClass;
 
 /**
  * @Author: hzh
@@ -293,7 +296,7 @@ public class EsExecutor {
 //                    script.append(scriptStr);
 //                    i++;
 //                }
-            } else if (!ResolveUtils.isCommonDataType(value.getClass()) && !ResolveUtils.isWrapClass(value.getClass())) {
+            } else if (!isCommonDataType(value.getClass()) && !isWrapClass(value.getClass())) {
                 value = BeanUtils.beanToMap(value);
             }
             //list直接覆盖
@@ -505,6 +508,39 @@ public class EsExecutor {
         }
     }
 
+    // 聚合
+    public <T> EsAggregationsReponse<T> aggregations(String index, EsQueryWrapper<T> esQueryWrapper) {
+        SearchRequest searchRequest = new SearchRequest();
+        //查询条件组合
+        BoolQueryBuilder queryBuilder = esQueryWrapper.getQueryBuilder();
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        sourceBuilder.query(queryBuilder);
+        sourceBuilder.size(0);
+        populateGroupField(esQueryWrapper.getEsAggregationWrapper(), sourceBuilder);
+        //设置索引
+        searchRequest.source(sourceBuilder);
+        searchRequest.indices(index);
+        //查询
+        SearchResponse searchResponse = null;
+        try {
+            long start = System.currentTimeMillis();
+            log.info("elasticsearch aggregations index={} body:{}", index, sourceBuilder);
+            searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
+            long end = System.currentTimeMillis();
+            log.info("elasticsearch aggregations Time={}", end - start);
+        } catch (Exception e) {
+            log.error("es查询失败", e);
+            throw new EsException("elasticsearch aggregations error");
+        }
+        if (searchResponse.status().getStatus() != 200) {
+            throw new EsException("elasticsearch aggregations error");
+        }
+        Aggregations aggregations = searchResponse.getAggregations();
+        EsAggregationsReponse<T> esAggregationReponse = new EsAggregationsReponse<>();
+        esAggregationReponse.setAggregations(aggregations);
+        esAggregationReponse.settClass(esQueryWrapper.gettClass());
+        return esAggregationReponse;
+    }
 
     public <T> EsResponse<T> search(PageInfo<T> pageInfo, EsQueryWrapper<T> esQueryWrapper, Class<T> tClass, String index) {
         SearchRequest searchRequest = new SearchRequest();
@@ -552,7 +588,7 @@ public class EsExecutor {
 //        else {
 //            sourceBuilder.sort(new FieldSortBuilder("_id").order(SortOrder.DESC));
 //        }
-        populateGroupField(esQueryWrapper, sourceBuilder);
+        populateGroupField(esQueryWrapper.getEsAggregationWrapper(), sourceBuilder);
         //设置索引
         searchRequest.source(sourceBuilder);
         searchRequest.indices(index);
@@ -563,7 +599,7 @@ public class EsExecutor {
             log.info("elasticsearch search index={} body:{}", index, sourceBuilder);
             searchResponse = restHighLevelClient.search(searchRequest, RequestOptions.DEFAULT);
             long end = System.currentTimeMillis();
-            log.info("elasticsearch search Time={} body:{}", end - start, sourceBuilder);
+            log.info("elasticsearch search Time={}", end - start);
         } catch (Exception e) {
             log.error("es查询失败", e);
             throw new EsException("elasticsearch search error");
@@ -571,8 +607,6 @@ public class EsExecutor {
         if (searchResponse.status().getStatus() != 200) {
             throw new EsException("elasticsearch search error");
         }
-        Aggregations aggregations = searchResponse.getAggregations();
-
         //获取结果集
         SearchHits hits = searchResponse.getHits();
         SearchHit[] hitArray = hits.getHits();
@@ -604,64 +638,22 @@ public class EsExecutor {
                 result.add(JsonUtils.toBean(hit.getSourceAsString(), tClass));
             }
         }
-        return new EsResponse<T>(result, hits.getTotalHits().value, aggregations);
+        Aggregations aggregations = searchResponse.getAggregations();
+        EsAggregationsReponse<T> esAggregationsReponse = new EsAggregationsReponse<>();
+        esAggregationsReponse.setAggregations(aggregations);
+        esAggregationsReponse.settClass(esQueryWrapper.gettClass());
+        return new EsResponse<T>(result, hits.getTotalHits().value, esAggregationsReponse);
     }
 
     //填充分组字段
-    private void populateGroupField(EsQueryWrapper<?> esQueryWrapper, SearchSourceBuilder sourceBuilder) {
-//        EsGroupField esGroupField = esQueryWrapper.getEsGroupField();
-//        if (esGroupField == null) {
-//            return;
-//        }
-//        List<EsTermGroupField> groupFields = esGroupField.getEsTermGroupFields();
-//        List<EsRangeGroupField> rangeGroupFields = esGroupField.getEsRangeGroupFields();
-//        List<EsFilterGroupField> filterGroupFields = esGroupField.getEsFilterGroupFields();
-//        if (!CollectionUtils.isEmpty(groupFields)) {
-//            for (EsTermGroupField gruopFeild : groupFields) {
-//                //构建聚合参数。  聚合名字是自己取得。后续通过这名字取出
-//                TermsAggregationBuilder aggregationBuilder = AggregationBuilders.terms(
-//                        "termsAggs_" + gruopFeild.getFieldName())
-//                        .field(gruopFeild.getFieldName()).order(gruopFeild.getBucketOrder());
-//                if (gruopFeild.getSize() != null) {
-//                    aggregationBuilder.size(gruopFeild.getSize());
-//                }
-//                //添加聚合参数
-//                sourceBuilder.aggregation(aggregationBuilder);
-//            }
-//        }
-//        if (!CollectionUtils.isEmpty(filterGroupFields)) {
-//            for (EsFilterGroupField groupField : filterGroupFields) {
-//                Map<String, Object> terms = groupField.getTerms();
-//                if (CollectionUtils.isEmpty(terms)) {
-//                    continue;
-//                }
-//                List<QueryBuilder> qbs = new ArrayList<>();
-//                terms.forEach((k, v) -> {
-//                    QueryBuilder qb = QueryBuilders.termQuery(k, v);
-//                    qbs.add(qb);
-//                });
-//                QueryBuilder[] queryBuilders = qbs.toArray(new QueryBuilder[0]);
-//                AggregationBuilders.filters("filtersAggs_" + groupField.getFieldName(), queryBuilders);
-//            }
-//        }
-//        if (!CollectionUtils.isEmpty(rangeGroupFields)) {
-//            for (EsRangeGroupField rangeGroupField : rangeGroupFields) {
-//                AggregationBuilder builder = AggregationBuilders
-//                        .range("rangeAggs_")
-//                        .field(rangeGroupField.getFieldName())
-//                        .addUnboundedFrom(rangeGroupField.getFrom())
-//                        .addUnboundedTo(rangeGroupField.getTo());
-//                sourceBuilder.aggregation(builder);
-//            }
-//        }
-        if (esQueryWrapper.getAggregationBuilder() != null) {
-            for (AggregationBuilder aggregation : esQueryWrapper.getAggregationBuilder()) {
-                sourceBuilder.aggregation(aggregation);
-            }
-        }
-        if (esQueryWrapper.getPipelineAggregatorBuilders() != null) {
-            for (PipelineAggregationBuilder pipelineAggregatorBuilder : esQueryWrapper.getPipelineAggregatorBuilders()) {
-                sourceBuilder.aggregation(pipelineAggregatorBuilder);
+    private void populateGroupField(EsAggregationWrapper<?> esAggregationWrapper, SearchSourceBuilder sourceBuilder) {
+        if (esAggregationWrapper.getAggregationBuilder() != null) {
+            for (BaseAggregationBuilder aggregation : esAggregationWrapper.getAggregationBuilder()) {
+                if (aggregation instanceof AggregationBuilder) {
+                    sourceBuilder.aggregation((AggregationBuilder) aggregation);
+                } else {
+                    sourceBuilder.aggregation((PipelineAggregationBuilder) aggregation);
+                }
             }
         }
     }

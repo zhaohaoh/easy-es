@@ -1,5 +1,8 @@
 package com.easy.es.core.wrapper;
 
+
+import com.easy.es.core.tools.SFunction;
+import com.easy.es.core.wrapper.aggregation.EsAggregationWrapper;
 import com.easy.es.pojo.EsHighLight;
 import com.easy.es.pojo.EsOrder;
 import com.easy.es.pojo.EsSelect;
@@ -9,8 +12,6 @@ import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
-import org.elasticsearch.search.aggregations.PipelineAggregationBuilder;
 import org.elasticsearch.search.sort.SortOrder;
 
 import java.util.ArrayList;
@@ -23,8 +24,8 @@ import java.util.function.Consumer;
  * @Date: 2022/1/21 11:11
  */
 @SuppressWarnings({"unchecked"})
-public abstract class AbstractEsWrapper<T, R, Children extends AbstractEsWrapper<T, R, Children>> extends  EsWrapper<T>
-        implements IEsQueryWrapper<Children, R>   {
+public abstract class AbstractEsWrapper<T, R extends SFunction<T, ?>, Children extends AbstractEsWrapper<T, R, Children>> extends AbstractLambdaEsWrapper<T, R>
+        implements IEsQueryWrapper<Children, R>, EsWrapper<T> {
     protected AbstractEsWrapper() {
     }
 
@@ -45,29 +46,32 @@ public abstract class AbstractEsWrapper<T, R, Children extends AbstractEsWrapper
 
     protected abstract Children instance();
 
-    protected abstract String[] nameToString(R... r);
-
-    protected abstract String nameToString(R r);
-
     protected EsHighLight esHighLight;
 
-    protected List<AggregationBuilder> aggregationBuilder;
-
-    private List<PipelineAggregationBuilder> pipelineAggregatorBuilders = new ArrayList<>();
+    protected EsAggregationWrapper<T> esAggregationWrapper;
 
     private List<QueryBuilder> queryBuilders = queryBuilder.must();
     //查询结果包含字段
     private EsSelect esSelect;
 
-    @Override
-    public List<AggregationBuilder> getAggregationBuilder() {
-        return aggregationBuilder;
+
+    public void setEsAggregationWrapper(EsAggregationWrapper<T> esAggregationWrapper) {
+        this.esAggregationWrapper = esAggregationWrapper;
+        esAggregationWrapper.setClass(tClass);
+    }
+
+    public EsAggregationWrapper<T> getEsAggregationWrapper() {
+        if (esAggregationWrapper == null) {
+            esAggregationWrapper = new EsAggregationWrapper<>(tClass);
+        }
+        return esAggregationWrapper;
     }
 
     @Override
-    public List<PipelineAggregationBuilder> getPipelineAggregatorBuilders() {
-        return pipelineAggregatorBuilders;
+    protected String nameToString(R function) {
+        return super.nameToString(function);
     }
+
 
     @Override
     public EsSelect getEsSelect() {
@@ -99,25 +103,13 @@ public abstract class AbstractEsWrapper<T, R, Children extends AbstractEsWrapper
         return this.getEsSelect();
     }
 
-    @Override
-    public Children addAggregationBuilder(AggregationBuilder aggregationBuilder) {
-        if (this.aggregationBuilder == null) {
-            this.aggregationBuilder = new ArrayList<>();
-        }
-        this.aggregationBuilder.add(aggregationBuilder);
-        return children;
-    }
-    @Override
-    public Children addAggregationBuilder(PipelineAggregationBuilder aggregationBuilder) {
-        if (this.aggregationBuilder == null) {
-            this.aggregationBuilder = new ArrayList<>();
-        }
-        this.pipelineAggregatorBuilders.add(aggregationBuilder);
-        return children;
-    }
-
     public void matchAll() {
         queryBuilder.must(QueryBuilders.matchAllQuery());
+    }
+
+    public Children boost(float boost) {
+        queryBuilder.boost(boost);
+        return this.children;
     }
 
     public Children and(Consumer<Children> consumer) {

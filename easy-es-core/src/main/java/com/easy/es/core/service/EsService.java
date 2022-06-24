@@ -7,6 +7,7 @@ import com.easy.es.core.chain.EsChainUpdateWrapper;
 import com.easy.es.core.wrapper.EsQueryWrapper;
 import com.easy.es.core.wrapper.EsUpdateWrapper;
 import com.easy.es.core.wrapper.EsWrapper;
+import com.easy.es.pojo.EsAggregationsReponse;
 import com.easy.es.pojo.EsResponse;
 import com.easy.es.pojo.EsSettings;
 import com.easy.es.pojo.PageInfo;
@@ -70,6 +71,8 @@ public interface EsService<T> {
     EsResponse<T> page(PageInfo<T> pageInfo, EsQueryWrapper<T> esQueryWrapper);
 
     long count(EsQueryWrapper<T> esQueryWrapper);
+
+    EsAggregationsReponse<T> aggregations(EsQueryWrapper<T> esQueryWrapper);
 
     default void scroll(EsQueryWrapper<T> esQueryWrapper, int size, ScrollHandler<T> scrollHandler) {
         scroll(esQueryWrapper, size, 1, scrollHandler);

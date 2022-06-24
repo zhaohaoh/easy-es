@@ -1,14 +1,16 @@
 package com.easy.es.core.wrapper;
 
+
 import com.easy.es.core.tools.SFunction;
 import com.easy.es.pojo.EsUpdateField;
 
 import java.util.List;
+
 /**
  * @Author: hzh
  * @Date: 2022/1/21 11:10
  */
-public class EsUpdateWrapper<T> extends AbstractLambdaEsWrapper<T, EsUpdateWrapper<T>>  implements Update<EsUpdateWrapper<T>, SFunction<T, ?>>{
+public class EsUpdateWrapper<T> extends AbstractEsWrapper<T, SFunction<T,?>, EsUpdateWrapper<T>>  implements  Update<EsUpdateWrapper<T>, SFunction<T, ?>> {
     private EsUpdateField esUpdateField = new EsUpdateField();
 
     public EsUpdateWrapper<T> set(String name, Object value) {

@@ -1,9 +1,11 @@
 package com.easy.es.core.wrapper;
 
-public class EsQueryWrapper<T> extends AbstractLambdaEsWrapper<T, EsQueryWrapper<T>> {
 
-    public EsQueryWrapper() {
-    }
+import com.easy.es.core.tools.SFunction;
+import com.easy.es.core.wrapper.aggregation.EsAggregationWrapper;
+
+public class EsQueryWrapper<T> extends  AbstractEsWrapper<T, SFunction<T, ?>, EsQueryWrapper<T>> {
+
 
     /**
      * 可自动映射keyword  建议使用
@@ -19,7 +21,11 @@ public class EsQueryWrapper<T> extends AbstractLambdaEsWrapper<T, EsQueryWrapper
         if (super.tClass != null) {
             return new EsQueryWrapper<>(super.tClass);
         }
-        return new EsQueryWrapper<>();
+        return new EsQueryWrapper<>(super.tClass);
     }
 
+
+    public Class<T> gettClass() {
+        return super.tClass;
+    }
 }

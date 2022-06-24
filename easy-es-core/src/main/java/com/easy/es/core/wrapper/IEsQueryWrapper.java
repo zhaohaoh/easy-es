@@ -1,8 +1,6 @@
 package com.easy.es.core.wrapper;
 
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
-import org.elasticsearch.search.aggregations.PipelineAggregationBuilder;
 
 import java.util.Collection;
 
@@ -239,8 +237,4 @@ public interface IEsQueryWrapper<Children, R> {
     }
 
     Children between(boolean condition, String name, Object from, Object to, boolean include);
-
-    Children addAggregationBuilder(AggregationBuilder aggregationBuilder);
-
-    Children addAggregationBuilder(PipelineAggregationBuilder aggregationBuilder);
 }

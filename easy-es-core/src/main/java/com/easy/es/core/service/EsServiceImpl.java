@@ -1,12 +1,12 @@
 package com.easy.es.core.service;
 
-
 import com.easy.es.core.ScrollHandler;
 import com.easy.es.core.chain.EsChainQueryWrapper;
 import com.easy.es.core.chain.EsChainUpdateWrapper;
 import com.easy.es.core.wrapper.EsQueryWrapper;
 import com.easy.es.core.wrapper.EsUpdateWrapper;
 import com.easy.es.core.wrapper.EsWrapper;
+import com.easy.es.pojo.EsAggregationsReponse;
 import com.easy.es.pojo.EsResponse;
 import com.easy.es.pojo.EsSettings;
 import com.easy.es.pojo.PageInfo;
@@ -214,7 +214,7 @@ public class EsServiceImpl<T> extends AbstractEsService<T> implements EsService<
     @Override
     public T getById(String id) {
         List<String> ids = Collections.singletonList(id);
-        EsQueryWrapper<T> esQueryWrapper = new EsQueryWrapper<>();
+        EsQueryWrapper<T> esQueryWrapper = new EsQueryWrapper<>(clazz);
         esQueryWrapper.ids(ids);
         //查询
         EsResponse<T> esResponse = esExecutor.searchByWrapper(esQueryWrapper, clazz, index);
@@ -233,7 +233,7 @@ public class EsServiceImpl<T> extends AbstractEsService<T> implements EsService<
      */
     @Override
     public List<T> listByIds(Collection<String> idList) {
-        EsQueryWrapper<T> esQueryWrapper = new EsQueryWrapper<>();
+        EsQueryWrapper<T> esQueryWrapper = new EsQueryWrapper<>(clazz);
         esQueryWrapper.ids(idList);
         //查询
         return esExecutor.searchByWrapper(esQueryWrapper, clazz, index).getList();
@@ -265,6 +265,11 @@ public class EsServiceImpl<T> extends AbstractEsService<T> implements EsService<
         return esExecutor.count(esQueryWrapper, index);
     }
 
+    @Override
+    public EsAggregationsReponse<T> aggregations(EsQueryWrapper<T> esQueryWrapper) {
+        return esExecutor.aggregations(index, esQueryWrapper);
+    }
+
 
     @Override
     public void scroll(EsQueryWrapper<T> esQueryWrapper, int size, int keepTime, ScrollHandler<T> scrollHandler) {
@@ -276,7 +281,7 @@ public class EsServiceImpl<T> extends AbstractEsService<T> implements EsService<
     }
 
     private EsQueryWrapper<T> matchAll() {
-        EsQueryWrapper<T> esQueryWrapper = new EsQueryWrapper<>();
+        EsQueryWrapper<T> esQueryWrapper = new EsQueryWrapper<>(clazz);
         esQueryWrapper.must().query(QueryBuilders.matchAllQuery());
         return esQueryWrapper;
     }

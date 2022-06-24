@@ -6,7 +6,7 @@
 
     <groupId>io.github.zhaohaoh</groupId>
     <artifactId>easy-es-pom</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1</version>
     <packaging>pom</packaging>
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

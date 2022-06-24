@@ -1,11 +1,6 @@
 package com.easy.es.constant;
 
 public interface EsConstant {
-    /*
-      INDEX属性
-     */
-    String NUMBER_OF_SHARDS = "number_of_shards";
-    String NUMBER_OF_REPLICAS = "number_of_replicas";
     /* 字段属性
      */
     String TYPE = "type";
@@ -16,4 +11,6 @@ public interface EsConstant {
     String FIELDS = "fields";
     //代表keyword字符串有效搜索长度
     String IGNORE_ABOVE = "ignore_above";
+    // 聚合字段分隔符
+    String AGG_DELIMITER = "_";
 }

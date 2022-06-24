@@ -1,16 +1,17 @@
 package com.easy.es.core.chain;
 
+
+import com.easy.es.core.tools.SFunction;
 import com.easy.es.core.wrapper.AbstractEsWrapper;
 import com.easy.es.core.wrapper.IEsQueryWrapper;
+import com.easy.es.core.wrapper.aggregation.EsAggregationWrapper;
 import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.search.aggregations.AggregationBuilder;
-import org.elasticsearch.search.aggregations.PipelineAggregationBuilder;
 
 import java.util.Collection;
 import java.util.function.Consumer;
 
 @SuppressWarnings({"unchecked"})
-public abstract class AbstractEsChainWrapper<T, R, Children extends AbstractEsChainWrapper<T, R, Children, QUERY>, QUERY extends AbstractEsWrapper<T, R, QUERY>>
+public abstract class AbstractEsChainWrapper<T, R extends SFunction<T, ?>, Children extends AbstractEsChainWrapper<T, R, Children, QUERY>, QUERY extends AbstractEsWrapper<T, R, QUERY>>
         implements IEsQueryWrapper<Children, R> {
     protected QUERY esWrapper;
     protected Children children = (Children) this;
@@ -347,17 +348,8 @@ public abstract class AbstractEsChainWrapper<T, R, Children extends AbstractEsCh
         return children;
     }
 
-    @Override
-    public Children addAggregationBuilder(AggregationBuilder aggregationBuilder) {
-        getWrapper().addAggregationBuilder(aggregationBuilder);
-        return children;
+    EsAggregationWrapper<T> getEsAggregationWrapper() {
+        return getWrapper().getEsAggregationWrapper();
     }
-
-    @Override
-    public Children addAggregationBuilder(PipelineAggregationBuilder aggregationBuilder) {
-        getWrapper().addAggregationBuilder(aggregationBuilder);
-        return children;
-    }
-
 
 }

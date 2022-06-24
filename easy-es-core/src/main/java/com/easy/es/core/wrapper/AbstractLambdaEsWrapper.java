@@ -1,22 +1,24 @@
 package com.easy.es.core.wrapper;
 
+
+
 import com.easy.es.core.tools.LambdaUtils;
 import com.easy.es.core.tools.SFunction;
-import com.easy.es.exception.EsException;
 import com.easy.es.core.tools.SerializedLambda;
+import com.easy.es.exception.EsException;
 
 import java.util.Arrays;
 import java.util.Locale;
 
-public abstract class AbstractLambdaEsWrapper<T, Children extends AbstractLambdaEsWrapper<T, Children>> extends AbstractEsWrapper<T, SFunction<T, ?>, Children> {
+public abstract class AbstractLambdaEsWrapper<T, R extends SFunction<T, ?>> {
 
-    @Override
-    protected final String[] nameToString(SFunction<T, ?>... functions) {
+
+    protected final String[] nameToString(R... functions) {
         return Arrays.stream(functions).map(this::nameToString).toArray(String[]::new);
     }
 
-    @Override
-    protected String nameToString(SFunction<T, ?> function) {
+
+    protected String nameToString(R function) {
         SerializedLambda lambda = LambdaUtils.resolve(function);
         return getColumn(lambda);
     }
