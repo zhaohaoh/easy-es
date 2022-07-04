@@ -45,13 +45,18 @@ public abstract class AbstractEsChainWrapper<T, R extends SFunction<T, ?>, Child
         getWrapper().matchAll();
     }
 
-    public Children and(Consumer<QUERY> consumer) {
-        getWrapper().or(consumer);
+    public Children must(Consumer<QUERY> consumer) {
+        getWrapper().must(consumer);
         return this.children;
     }
 
-    public Children or(Consumer<QUERY> consumer) {
-        getWrapper().or(consumer);
+    public Children should(Consumer<QUERY> consumer) {
+        getWrapper().should(consumer);
+        return this.children;
+    }
+
+    public Children mustNot(Consumer<QUERY> consumer) {
+        getWrapper().mustNot(consumer);
         return this.children;
     }
 

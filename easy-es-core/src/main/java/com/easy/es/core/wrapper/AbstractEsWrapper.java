@@ -112,17 +112,24 @@ public abstract class AbstractEsWrapper<T, R extends SFunction<T, ?>, Children e
         return this.children;
     }
 
-    public Children and(Consumer<Children> consumer) {
+    public Children must(Consumer<Children> consumer) {
         final Children children = instance();
         consumer.accept(children);
         this.children.queryBuilder.must(children.queryBuilder);
         return this.children;
     }
 
-    public Children or(Consumer<Children> consumer) {
+    public Children should(Consumer<Children> consumer) {
         final Children children = instance();
         consumer.accept(children);
         this.children.queryBuilder.should(children.queryBuilder);
+        return this.children;
+    }
+
+    public Children mustNot(Consumer<Children> consumer) {
+        final Children children = instance();
+        consumer.accept(children);
+        this.children.queryBuilder.mustNot(children.queryBuilder);
         return this.children;
     }
 
