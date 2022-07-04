@@ -3,12 +3,37 @@ package com.easy.es.core.wrapper;
 import org.elasticsearch.index.query.QueryBuilder;
 
 import java.util.Collection;
+import java.util.function.Consumer;
 
 /**
  * @Author: hzh
  * @Date: 2022/1/21 11:10
  */
-public interface IEsQueryWrapper<Children, R> {
+public interface IEsQueryWrapper<Children, QUERY, R> {
+    default Children must(Consumer<QUERY> consumer) {
+        return must(true, consumer);
+    }
+
+    Children must(boolean condition, Consumer<QUERY> consumer);
+
+    default Children should(Consumer<QUERY> consumer) {
+        return should(true, consumer);
+    }
+
+    Children should(boolean condition, Consumer<QUERY> consumer);
+
+    default Children mustNot(Consumer<QUERY> consumer) {
+        return mustNot(true, consumer);
+    }
+
+    Children mustNot(boolean condition, Consumer<QUERY> consumer);
+
+    default Children filters(Consumer<QUERY> consumer) {
+        return filters(true, consumer);
+    }
+
+    Children filters(boolean condition, Consumer<QUERY> consumer);
+
     default Children query(QueryBuilder queryBuilder) {
         return query(true, queryBuilder);
     }

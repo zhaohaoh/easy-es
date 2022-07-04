@@ -9,16 +9,40 @@ import org.elasticsearch.index.query.QueryBuilder;
 
 import java.util.Collection;
 import java.util.function.Consumer;
-
+/**
+ * @Author: hzh
+ * @Date: 2022/7/4 17:23
+ * T是实体类 R的方法 Children是自己
+ */
 @SuppressWarnings({"unchecked"})
 public abstract class AbstractEsChainWrapper<T, R extends SFunction<T, ?>, Children extends AbstractEsChainWrapper<T, R, Children, QUERY>, QUERY extends AbstractEsWrapper<T, R, QUERY>>
-        implements IEsQueryWrapper<Children, R> {
+        implements IEsQueryWrapper<Children,QUERY, R> {
     protected QUERY esWrapper;
     protected Children children = (Children) this;
     protected Class<T> tClass;
 
     public AbstractEsWrapper<T, R, QUERY> getWrapper() {
         return esWrapper;
+    }
+    @Override
+    public Children must(boolean condition,Consumer<QUERY> consumer) {
+        getWrapper().must(condition,consumer);
+        return this.children;
+    }
+    @Override
+    public Children should(boolean condition,Consumer<QUERY> consumer) {
+        getWrapper().should(consumer);
+        return this.children;
+    }
+    @Override
+    public Children mustNot(boolean condition,Consumer<QUERY> consumer) {
+        getWrapper().mustNot(consumer);
+        return this.children;
+    }
+    @Override
+    public Children filters(boolean condition,Consumer<QUERY> consumer) {
+        getWrapper().filters(condition,consumer);
+        return this.children;
     }
 
     public Children orderBy(String order, R... columns) {
@@ -45,25 +69,6 @@ public abstract class AbstractEsChainWrapper<T, R extends SFunction<T, ?>, Child
         getWrapper().matchAll();
     }
 
-    public Children must(Consumer<QUERY> consumer) {
-        getWrapper().must(consumer);
-        return this.children;
-    }
-
-    public Children should(Consumer<QUERY> consumer) {
-        getWrapper().should(consumer);
-        return this.children;
-    }
-
-    public Children mustNot(Consumer<QUERY> consumer) {
-        getWrapper().mustNot(consumer);
-        return this.children;
-    }
-
-    public Children filters(Consumer<QUERY> consumer) {
-        getWrapper().filters(consumer);
-        return this.children;
-    }
 
     public Children must() {
         getWrapper().must();

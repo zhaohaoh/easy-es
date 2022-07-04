@@ -25,7 +25,7 @@ import java.util.function.Consumer;
  */
 @SuppressWarnings({"unchecked"})
 public abstract class AbstractEsWrapper<T, R extends SFunction<T, ?>, Children extends AbstractEsWrapper<T, R, Children>> extends AbstractLambdaEsWrapper<T, R>
-        implements IEsQueryWrapper<Children, R>, EsWrapper<T> {
+        implements IEsQueryWrapper<Children, Children, R>, EsWrapper<T> {
     protected AbstractEsWrapper() {
     }
 
@@ -112,28 +112,32 @@ public abstract class AbstractEsWrapper<T, R extends SFunction<T, ?>, Children e
         return this.children;
     }
 
-    public Children must(Consumer<Children> consumer) {
+    @Override
+    public Children must(boolean condition, Consumer<Children> consumer) {
         final Children children = instance();
         consumer.accept(children);
         this.children.queryBuilder.must(children.queryBuilder);
         return this.children;
     }
 
-    public Children should(Consumer<Children> consumer) {
+    @Override
+    public Children should(boolean condition, Consumer<Children> consumer) {
         final Children children = instance();
         consumer.accept(children);
         this.children.queryBuilder.should(children.queryBuilder);
         return this.children;
     }
 
-    public Children mustNot(Consumer<Children> consumer) {
+    @Override
+    public Children mustNot(boolean condition, Consumer<Children> consumer) {
         final Children children = instance();
         consumer.accept(children);
         this.children.queryBuilder.mustNot(children.queryBuilder);
         return this.children;
     }
 
-    public Children filters(Consumer<Children> consumer) {
+    @Override
+    public Children filters(boolean condition, Consumer<Children> consumer) {
         final Children children = instance();
         consumer.accept(children);
         this.children.queryBuilder.filter(children.queryBuilder);
