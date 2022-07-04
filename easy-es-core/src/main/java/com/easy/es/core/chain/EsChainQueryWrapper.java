@@ -2,6 +2,7 @@ package com.easy.es.core.chain;
 
 import com.easy.es.core.ScrollHandler;
 import com.easy.es.core.tools.SFunction;
+import com.easy.es.pojo.EsAggregationsReponse;
 import com.easy.es.pojo.EsResponse;
 import com.easy.es.pojo.PageInfo;
 import com.easy.es.core.wrapper.EsQueryWrapper;
@@ -26,6 +27,10 @@ public class EsChainQueryWrapper<T> extends AbstractEsChainWrapper<T, SFunction<
 
     public EsResponse<T> page(long page, long size) {
         return esService.page(new PageInfo<>(page, size), super.esWrapper);
+    }
+
+    public EsAggregationsReponse<T> aggregations() {
+        return esService.aggregations(super.esWrapper);
     }
 
     public long count() {

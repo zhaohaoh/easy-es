@@ -17,6 +17,7 @@ import java.util.function.BiConsumer;
 /**
  * @Author: hzh
  * @Date: 2021/9/17 14:48
+ * 暂不使用
  * Bulk有它的弊端， 插入数据没有限制  1000万数据也会直接写入
  * BulkProcessor自定义处理分批次写入。
  * 累计到指定的数量或者达到超时时间就会进行一次写入

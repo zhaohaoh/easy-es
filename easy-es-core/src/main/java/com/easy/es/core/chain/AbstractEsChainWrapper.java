@@ -333,27 +333,27 @@ public abstract class AbstractEsChainWrapper<T, R extends SFunction<T, ?>, Child
         return children;
     }
 
-    Children includes(R... func) {
+    public Children includes(R... func) {
         getWrapper().excludes(func);
         return children;
     }
 
-    Children includes(String... names) {
+    public Children includes(String... names) {
         getWrapper().excludes(names);
         return children;
     }
 
-    Children excludes(R... func) {
+    public Children excludes(R... func) {
         getWrapper().excludes(func);
         return children;
     }
 
-    Children excludes(String... names) {
+    public Children excludes(String... names) {
         getWrapper().excludes(names);
         return children;
     }
 
-    EsAggregationWrapper<T> getEsAggregationWrapper() {
+    public EsAggregationWrapper<T> getEsAggregationWrapper() {
         return getWrapper().getEsAggregationWrapper();
     }
 

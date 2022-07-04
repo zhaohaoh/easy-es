@@ -11,6 +11,8 @@ import java.io.IOException;
  * @Author: hzh
  * @Date: 2022/6/13 10:24
  * 序列化忽略 keyAsNumber字段
+ * json序列化聚合
+ * 暂不使用
  */
 public class ParsedStringTermsBucketSerializer extends StdSerializer<ParsedStringTerms.ParsedBucket> {
 
