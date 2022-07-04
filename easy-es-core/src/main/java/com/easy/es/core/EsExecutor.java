@@ -116,24 +116,6 @@ public class EsExecutor {
         indexMappingRequest(tClass, esDocParam, indexRequest);
     }
 
-    public boolean updateSettings(String index, Map<String, String> settingsMap) {
-        Settings.Builder builder = Settings.builder();
-        settingsMap.forEach(builder::put);
-        //最大窗口
-//        settingsMap.put("max_result_window", 500000);
-        Settings settings = builder.build();
-        UpdateSettingsRequest updateSettingsRequest = new UpdateSettingsRequest(settings, index);
-
-        //执行put
-        AcknowledgedResponse settingsResult = null;
-        try {
-            settingsResult = restHighLevelClient.indices().putSettings(updateSettingsRequest, RequestOptions.DEFAULT);
-            return settingsResult.isAcknowledged();
-        } catch (IOException e) {
-            throw new EsException("update settings error", e);
-        }
-    }
-
     public void asyncSaveBatch(String index, List<?> objects) {
         for (Object esData : objects) {
             IndexRequest indexRequest = new IndexRequest(index).type(ES_TYPE).id(EsParamHolder.getDocId(esData)).source(JsonUtils.toJsonStr(esData), XContentType.JSON);
@@ -184,10 +166,9 @@ public class EsExecutor {
                 DocWriteResponse response = bulkItemResponse.getResponse();
                 IndexResponse indexResponse = (IndexResponse) response;
                 if (bulkItemResponse.isFailed()) {
-                    log.error("es save error" + bulkItemResponse.getId() + " message:" + bulkItemResponse.getFailureMessage());
-                    throw new EsException("数据插入错误:" + bulkItemResponse.getFailureMessage());
+                    throw new EsException("es save error" + bulkItemResponse.getFailureMessage());
                 } else {
-                    log.info("es save index={} data={}", index, JsonUtils.toJsonStr(esData));
+                    log.info("es save success index={} data={}", index, JsonUtils.toJsonStr(esData));
                 }
             }
         } catch (IOException e) {
@@ -210,13 +191,14 @@ public class EsExecutor {
         updateRequest.setRefreshPolicy(WriteRequest.RefreshPolicy.WAIT_UNTIL);
         try {
             UpdateResponse updateResponse = restHighLevelClient.update(updateRequest, RequestOptions.DEFAULT);
-            log.info("es update  index={} data={}", index, JsonUtils.toJsonStr(esData));
             if (updateResponse.getResult() == DocWriteResponse.Result.DELETED) {
-                log.info("更新数据失败 原因:文档删除");
+                log.error("es update index={} data={}  error reason: doc  deleted", index, JsonUtils.toJsonStr(esData));
                 return false;
             } else if (updateResponse.getResult() == DocWriteResponse.Result.NOOP) {
                 //noop标识没有数据改变。前后的值相同
                 return false;
+            }else{
+                log.info("es update success index={} data={}", index, JsonUtils.toJsonStr(esData));
             }
         } catch (IOException e) {
             throw new EsException("elasticsearch update io error", e);
@@ -227,7 +209,7 @@ public class EsExecutor {
             }
             //找不到
             if (e.status() == RestStatus.NOT_FOUND) {
-                log.info("elasticsearch update error not found doc");
+                log.error("es update index={} data={}  error reason:  not found doc", index, JsonUtils.toJsonStr(esData));
                 return false;
             }
         } catch (Exception e) {
@@ -391,14 +373,14 @@ public class EsExecutor {
         request.setQuery(new MatchAllQueryBuilder());
         try {
             restHighLevelClient.deleteByQuery(request, RequestOptions.DEFAULT);
-            log.info("es deleteAll index={}", index);
+            log.info("Es deleteAll index={}", index);
         } catch (IOException e) {
-            throw new EsException("数据删除错误", e);
+            throw new EsException("Es delete error", e);
         }
     }
 
     public boolean deleteBatch(String index, Collection<String> esDataList) {
-        log.info("es deleteBatch index={} ids={}", index, esDataList);
+        log.info("Es deleteBatch index={} ids={}", index, esDataList);
         BulkRequest bulkRequest = new BulkRequest();
         esDataList.forEach(id -> {
             DeleteRequest deleteRequest = new DeleteRequest(index, id);
@@ -414,7 +396,7 @@ public class EsExecutor {
                 }
             }
         } catch (IOException e) {
-            throw new EsException("数据删除错误", e);
+            throw new EsException("Es delete error", e);
         }
         return true;
     }
@@ -529,7 +511,7 @@ public class EsExecutor {
             long end = System.currentTimeMillis();
             log.info("elasticsearch aggregations Time={}", end - start);
         } catch (Exception e) {
-            log.error("es查询失败", e);
+            log.error("es aggregations error", e);
             throw new EsException("elasticsearch aggregations error");
         }
         if (searchResponse.status().getStatus() != 200) {
