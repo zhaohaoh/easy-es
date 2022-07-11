@@ -24,7 +24,7 @@ import java.util.Map;
 /**
  * @author hzh
  * @date 2021/4/4 16:57 更新
- * Json序列化工具类  实例化速度慢
+ * Json序列化工具类  为空的列不参与序列化   以免es更新的时候多更新了null的列
  */
 public class JsonUtils {
     // 定义jackson对象
