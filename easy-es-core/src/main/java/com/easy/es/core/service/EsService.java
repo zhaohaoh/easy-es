@@ -62,9 +62,9 @@ public interface EsService<T> {
 
     BulkByScrollResponse updateByWrapper(EsWrapper<T> esUpdateWrapper);
 
-    T getById(String id);
+    T getById(Serializable id);
 
-    List<T> listByIds(Collection<String> idList);
+    List<T> listByIds(Collection<Serializable> idList);
 
     EsResponse<T> list(EsQueryWrapper<T> esQueryWrapper);
 
@@ -79,4 +79,6 @@ public interface EsService<T> {
     }
 
     void scroll(EsQueryWrapper<T> esQueryWrapper, int size, int keepTime, ScrollHandler<T> scrollHandler);
+
+    BulkByScrollResponse increment(EsWrapper<T> esUpdateWrapper);
 }

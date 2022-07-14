@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class EsUpdateField {
-    List<Field> fields = new ArrayList<>();
+    private List<Field> fields = new ArrayList<>();
+
+    private List<Field> incrementFields = new ArrayList<>();
 
     public List<Field> getFields() {
         return fields;
@@ -13,6 +15,14 @@ public class EsUpdateField {
 
     public void setFields(List<Field> fields) {
         this.fields = fields;
+    }
+
+    public List<Field> getIncrementFields() {
+        return incrementFields;
+    }
+
+    public void setIncrementFields(List<Field> incrementFields) {
+        this.incrementFields = incrementFields;
     }
 
     public static class Field {

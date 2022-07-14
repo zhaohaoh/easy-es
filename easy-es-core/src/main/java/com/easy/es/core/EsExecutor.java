@@ -197,7 +197,7 @@ public class EsExecutor {
             } else if (updateResponse.getResult() == DocWriteResponse.Result.NOOP) {
                 //noop标识没有数据改变。前后的值相同
                 return false;
-            }else{
+            } else {
                 log.info("es update success index={} data={}", index, JsonUtils.toJsonStr(esData));
             }
         } catch (IOException e) {
@@ -236,7 +236,7 @@ public class EsExecutor {
         try {
             res = restHighLevelClient.bulk(bulkRequest, RequestOptions.DEFAULT);
             boolean hasFailures = res.hasFailures();
-            log.info("es updateBatch index={} hasFailures={}", index, hasFailures);
+            log.info("es updateBatch index={} data:{} hasFailures={}", index, JsonUtils.toJsonStr(esDataList), hasFailures);
             for (BulkItemResponse bulkItemResponse : res.getItems()) {
                 if (bulkItemResponse.isFailed()) {
                     responses.add(bulkItemResponse);
@@ -251,7 +251,6 @@ public class EsExecutor {
 
 
     public <T> BulkByScrollResponse updateByWrapper(String index, EsWrapper<T> esUpdateWrapper) {
-
         List<EsUpdateField.Field> fields = esUpdateWrapper.getEsUpdateField().getFields();
         Map<String, Object> params = new HashMap<>();
         //构建scipt语句
@@ -269,19 +268,10 @@ public class EsExecutor {
             } else if (value instanceof LocalDate) {
                 value = ((LocalDate) value).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             } else if (value instanceof List) {
-                //   int i = 0;
-//                List list = (List) value;
-//                for (Object o : list) {
-//                    params.put(name + i, o);
-//                    String scriptStr = "if(!ctx._source.containsKey('" + name + "')){ctx._source." + name + "=[params." + name + i + "]}else{" +
-//                            "ctx._source." + name + ".add(params." + name + i + ")}";
-//                    script.append(scriptStr);
-//                    i++;
-//                }
             } else if (!isCommonDataType(value.getClass()) && !isWrapClass(value.getClass())) {
                 value = BeanUtils.beanToMap(value);
             }
-            //list直接覆盖
+            //list直接覆盖 丢进去 无需再特殊处理
             params.put(name, value);
             script.append("ctx._source.");
             script.append(name).append(" = params.").append(name).append(";");
@@ -295,13 +285,44 @@ public class EsExecutor {
         Script painless = new Script(ScriptType.INLINE, "painless", script.toString(), params);
         request.setScript(painless);
         try {
+            log.info("updateByWrapper requst: script:{},params={}", script, params);
             BulkByScrollResponse bulkResponse =
                     restHighLevelClient.updateByQuery(request, RequestOptions.DEFAULT);
-            log.info("更新es数据:{},params={}", script, params.toString());
+            log.info("updateByWrapper response:{} update count=", bulkResponse);
             return bulkResponse;
         } catch (IOException e) {
-            log.error("updateByWrapper errorInfo=", e);
             throw new EsException("updateByWrapper IOException", e);
+        }
+    }
+
+    public <T> BulkByScrollResponse increment(String index, EsWrapper<T> esUpdateWrapper) {
+        List<EsUpdateField.Field> fields = esUpdateWrapper.getEsUpdateField().getIncrementFields();
+        Map<String, Object> params = new HashMap<>();
+        //构建scipt语句
+        StringBuilder script = new StringBuilder();
+        for (EsUpdateField.Field field : fields) {
+            String name = field.getName();
+            Long value = (Long) field.getValue();
+            params.put(name, value);
+            script.append("ctx._source.");
+            script.append(name).append(" += params.").append(name).append(";");
+        }
+        UpdateByQueryRequest request = new UpdateByQueryRequest(index);
+        //版本号不匹配更新失败不停止
+        request.setConflicts("proceed");
+        request.setQuery(esUpdateWrapper.getQueryBuilder());
+        request.setBatchSize(10000);
+        request.setIndicesOptions(IndicesOptions.LENIENT_EXPAND_OPEN);
+        Script painless = new Script(ScriptType.INLINE, "painless", script.toString(), params);
+        request.setScript(painless);
+        try {
+            log.info("updateByWrapper increment requst: script:{},params={}", script, params);
+            BulkByScrollResponse bulkResponse =
+                    restHighLevelClient.updateByQuery(request, RequestOptions.DEFAULT);
+            log.info("updateByWrapper increment response:{} update count=", bulkResponse);
+            return bulkResponse;
+        } catch (IOException e) {
+            throw new EsException("updateByWrapper increment IOException", e);
         }
     }
 

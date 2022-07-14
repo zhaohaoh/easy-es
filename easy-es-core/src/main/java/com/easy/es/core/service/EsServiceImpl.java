@@ -16,10 +16,7 @@ import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import org.springframework.util.CollectionUtils;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -212,8 +209,8 @@ public class EsServiceImpl<T> extends AbstractEsService<T> implements EsService<
      * @param id 主键ID
      */
     @Override
-    public T getById(String id) {
-        List<String> ids = Collections.singletonList(id);
+    public T getById(Serializable id) {
+        List<String> ids = Collections.singletonList(id.toString());
         EsQueryWrapper<T> esQueryWrapper = new EsQueryWrapper<>(clazz);
         esQueryWrapper.ids(ids);
         //查询
@@ -232,9 +229,9 @@ public class EsServiceImpl<T> extends AbstractEsService<T> implements EsService<
      * @param idList 主键ID列表
      */
     @Override
-    public List<T> listByIds(Collection<String> idList) {
+    public List<T> listByIds(Collection<Serializable> idList) {
         EsQueryWrapper<T> esQueryWrapper = new EsQueryWrapper<>(clazz);
-        esQueryWrapper.ids(idList);
+        esQueryWrapper.ids(idList.stream().map(Objects::toString).collect(Collectors.toList()));
         //查询
         return esExecutor.searchByWrapper(esQueryWrapper, clazz, index).getList();
     }
@@ -278,6 +275,11 @@ public class EsServiceImpl<T> extends AbstractEsService<T> implements EsService<
         }
 
         esExecutor.scrollByWrapper(esQueryWrapper, clazz, index, size, keepTime, scrollHandler);
+    }
+
+    @Override
+    public BulkByScrollResponse increment(EsWrapper<T> esUpdateWrapper) {
+        return esExecutor.increment(index, esUpdateWrapper);
     }
 
     private EsQueryWrapper<T> matchAll() {

@@ -10,15 +10,26 @@ import java.util.List;
  * @Author: hzh
  * @Date: 2022/1/21 11:10
  */
-public class EsUpdateWrapper<T> extends AbstractEsWrapper<T, SFunction<T,?>, EsUpdateWrapper<T>>  implements  Update<EsUpdateWrapper<T>, SFunction<T, ?>> {
-    private EsUpdateField esUpdateField = new EsUpdateField();
+public class EsUpdateWrapper<T> extends AbstractEsWrapper<T, SFunction<T, ?>, EsUpdateWrapper<T>> implements Update<EsUpdateWrapper<T>, SFunction<T, ?>> {
+    private final EsUpdateField esUpdateField = new EsUpdateField();
 
+    @Override
     public EsUpdateWrapper<T> set(String name, Object value) {
         List<EsUpdateField.Field> fields = esUpdateField.getFields();
         EsUpdateField.Field field = new EsUpdateField.Field(name, value);
         fields.add(field);
         return this;
     }
+
+    @Override
+    public EsUpdateWrapper<T> increment(String name, Long value) {
+        List<EsUpdateField.Field> fields = esUpdateField.getIncrementFields();
+        EsUpdateField.Field field = new EsUpdateField.Field(name, value);
+        fields.add(field);
+        return this;
+    }
+
+
     public EsUpdateWrapper(Class<T> tClass) {
         super.tClass = tClass;
     }
@@ -48,4 +59,13 @@ public class EsUpdateWrapper<T> extends AbstractEsWrapper<T, SFunction<T,?>, EsU
         }
         return this;
     }
+
+    @Override
+    public EsUpdateWrapper<T> increment(boolean condition, SFunction<T, ?> column, Long val) {
+        if (condition) {
+            increment(nameToString(column), val);
+        }
+        return this;
+    }
+
 }

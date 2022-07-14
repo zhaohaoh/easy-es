@@ -15,13 +15,20 @@
  */
 package com.easy.es.core.wrapper;
 
+import com.easy.es.pojo.EsUpdateField;
+
 import java.io.Serializable;
+import java.util.List;
 
 /**
  * @author miemie
  * @since 2018-12-12
  */
 public interface Update<Children, R> extends Serializable {
+
+    Children set(String name, Object value);
+
+    Children increment(String name, Long value);
 
     /**
      * ignore
@@ -40,4 +47,9 @@ public interface Update<Children, R> extends Serializable {
      */
     Children set(boolean condition, R column, Object val);
 
+    default Children increment(R column, Long val) {
+        return increment(true, column, val);
+    }
+
+    Children increment(boolean condition, R column, Long val);
 }
