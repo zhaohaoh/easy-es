@@ -311,6 +311,7 @@ public class EsExecutor {
         //版本号不匹配更新失败不停止
         request.setConflicts("proceed");
         request.setQuery(esUpdateWrapper.getQueryBuilder());
+        // 一次批处理的大小.因为是滚动处理的
         request.setBatchSize(1000);
         request.setIndicesOptions(IndicesOptions.LENIENT_EXPAND_OPEN);
         Script painless = new Script(ScriptType.INLINE, "painless", script.toString(), params);
