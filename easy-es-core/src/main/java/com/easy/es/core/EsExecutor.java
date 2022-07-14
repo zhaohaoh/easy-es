@@ -280,7 +280,7 @@ public class EsExecutor {
         //版本号不匹配更新失败不停止
         request.setConflicts("proceed");
         request.setQuery(esUpdateWrapper.getQueryBuilder());
-        request.setBatchSize(10000);
+        request.setBatchSize(1000);
         request.setIndicesOptions(IndicesOptions.LENIENT_EXPAND_OPEN);
         Script painless = new Script(ScriptType.INLINE, "painless", script.toString(), params);
         request.setScript(painless);
@@ -311,7 +311,7 @@ public class EsExecutor {
         //版本号不匹配更新失败不停止
         request.setConflicts("proceed");
         request.setQuery(esUpdateWrapper.getQueryBuilder());
-        request.setBatchSize(10000);
+        request.setBatchSize(1000);
         request.setIndicesOptions(IndicesOptions.LENIENT_EXPAND_OPEN);
         Script painless = new Script(ScriptType.INLINE, "painless", script.toString(), params);
         request.setScript(painless);
