@@ -251,41 +251,48 @@ public class EsExecutor {
 
 
     public <T> BulkByScrollResponse updateByWrapper(String index, EsWrapper<T> esUpdateWrapper) {
-        List<EsUpdateField.Field> fields = esUpdateWrapper.getEsUpdateField().getFields();
-        Map<String, Object> params = new HashMap<>();
-        //构建scipt语句
-        StringBuilder script = new StringBuilder();
-        for (EsUpdateField.Field field : fields) {
-            String name = field.getName();
-            //除了基本类型和字符串。日期的对象需要进行转化
-            Object value = field.getValue();
-            if (value instanceof Date) {
-                SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                Date date = (Date) value;
-                value = simpleDateFormat.format(date);
-            } else if (value instanceof LocalDateTime) {
-                value = ((LocalDateTime) value).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
-            } else if (value instanceof LocalDate) {
-                value = ((LocalDate) value).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-            } else if (value instanceof List) {
-            } else if (!isCommonDataType(value.getClass()) && !isWrapClass(value.getClass())) {
-                value = BeanUtils.beanToMap(value);
+        EsUpdateField esUpdateField = esUpdateWrapper.getEsUpdateField();
+        List<EsUpdateField.Field> fields = esUpdateField.getFields();
+        String scipt = esUpdateField.getScipt();
+        Map<String, Object> params = esUpdateField.getSciptParams();
+        if (StringUtils.isBlank(scipt)) {
+            params = new HashMap<>();
+            //构建scipt语句
+            StringBuilder sb = new StringBuilder();
+            for (EsUpdateField.Field field : fields) {
+                String name = field.getName();
+                //除了基本类型和字符串。日期的对象需要进行转化
+                Object value = field.getValue();
+                if (value instanceof Date) {
+                    SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                    Date date = (Date) value;
+                    value = simpleDateFormat.format(date);
+                } else if (value instanceof LocalDateTime) {
+                    value = ((LocalDateTime) value).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+                } else if (value instanceof LocalDate) {
+                    value = ((LocalDate) value).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+                } else if (value instanceof List) {
+                } else if (!isCommonDataType(value.getClass()) && !isWrapClass(value.getClass())) {
+                    value = BeanUtils.beanToMap(value);
+                }
+                //list直接覆盖 丢进去 无需再特殊处理
+                params.put(name, value);
+                sb.append("ctx._source.");
+                sb.append(name).append(" = params.").append(name).append(";");
             }
-            //list直接覆盖 丢进去 无需再特殊处理
-            params.put(name, value);
-            script.append("ctx._source.");
-            script.append(name).append(" = params.").append(name).append(";");
+            scipt = sb.toString();
         }
+
         UpdateByQueryRequest request = new UpdateByQueryRequest(index);
         //版本号不匹配更新失败不停止
         request.setConflicts("proceed");
         request.setQuery(esUpdateWrapper.getQueryBuilder());
         request.setBatchSize(1000);
         request.setIndicesOptions(IndicesOptions.LENIENT_EXPAND_OPEN);
-        Script painless = new Script(ScriptType.INLINE, "painless", script.toString(), params);
+        Script painless = new Script(ScriptType.INLINE, "painless", scipt, params);
         request.setScript(painless);
         try {
-            log.info("updateByWrapper requst: script:{},params={}", script, params);
+            log.info("updateByWrapper requst: script:{},params={}", scipt, params);
             BulkByScrollResponse bulkResponse =
                     restHighLevelClient.updateByQuery(request, RequestOptions.DEFAULT);
             log.info("updateByWrapper response:{} update count=", bulkResponse);
@@ -362,15 +369,15 @@ public class EsExecutor {
         DeleteByQueryRequest request = new DeleteByQueryRequest(index);
         request.setQuery(queryBuilder);
         // 更新最大文档数
-        request.setMaxDocs(10000);
-        request.setMaxRetries(10);
-        request.setBatchSize(10000);
+        request.setMaxDocs(100000);
+        request.setMaxRetries(5);
+        request.setBatchSize(1000);
         // 刷新索引
         request.setRefresh(true);
         // 使用滚动参数来控制“搜索上下文”存活的时间
-        request.setScroll(TimeValue.timeValueMinutes(10));
+        request.setScroll(TimeValue.timeValueMinutes(5));
         // 超时
-        request.setTimeout(TimeValue.timeValueMinutes(2));
+        request.setTimeout(TimeValue.timeValueMinutes(5));
         // 更新时版本冲突
         request.setConflicts("proceed");
         try {

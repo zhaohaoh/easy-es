@@ -19,6 +19,7 @@ import com.easy.es.pojo.EsUpdateField;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author miemie
@@ -52,4 +53,10 @@ public interface Update<Children, R> extends Serializable {
     }
 
     Children increment(boolean condition, R column, Long val);
+
+    default Children setScipt(String script, Map<String, Object> sciptParams) {
+        return setScipt(true, script,sciptParams);
+    }
+
+    Children setScipt(boolean condition, String script,Map<String, Object> sciptParams);
 }

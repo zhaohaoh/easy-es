@@ -3,8 +3,10 @@ package com.easy.es.core.wrapper;
 
 import com.easy.es.core.tools.SFunction;
 import com.easy.es.pojo.EsUpdateField;
+import lombok.val;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @Author: hzh
@@ -29,6 +31,13 @@ public class EsUpdateWrapper<T> extends AbstractEsWrapper<T, SFunction<T, ?>, Es
         return this;
     }
 
+    @Override
+    public EsUpdateWrapper<T> setScipt(boolean condition, String scipt, Map<String, Object> sciptParams) {
+        if (condition) {
+            esUpdateField.setScipt(scipt,sciptParams);
+        }
+        return this;
+    }
 
     public EsUpdateWrapper(Class<T> tClass) {
         super.tClass = tClass;

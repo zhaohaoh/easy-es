@@ -10,6 +10,7 @@ import org.elasticsearch.index.reindex.BulkByScrollResponse;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
+import java.util.Map;
 
 public class EsChainUpdateWrapper<T> extends AbstractEsChainWrapper<T, SFunction<T, ?>, EsChainUpdateWrapper<T>, EsUpdateWrapper<T>> {
     private final EsService<T> esService;
@@ -49,6 +50,10 @@ public class EsChainUpdateWrapper<T> extends AbstractEsChainWrapper<T, SFunction
         return esService.remove(esWrapper);
     }
 
+    public EsChainUpdateWrapper<T> setScipt(String scipt, Map<String, Object> sciptParams) {
+        esWrapper.setScipt(scipt,sciptParams);
+        return this;
+    }
 
     public EsChainUpdateWrapper<T> set(String name, Object value) {
         esWrapper.set(name, value);
